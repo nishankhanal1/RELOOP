@@ -1,0 +1,171 @@
+.hold-button {
+  --hb-radius: 8px;
+  --hb-bg: #27272a;
+  --hb-fill: #5227ff;
+  --hb-text: #f5f5f5;
+  --hb-fill-text: #fff;
+  --hb-hold: 2000ms;
+  --hb-release: 200ms;
+  --hb-press: 0.97;
+  --hb-wave: 0px;
+  --hb-progress: 0;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 20px;
+  border: 1px solid color-mix(in srgb, var(--hb-fill) 72%, transparent);
+  border-radius: var(--hb-radius);
+  background: var(--hb-bg);
+  color: var(--hb-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 160ms ease, box-shadow 180ms ease;
+}
+
+.hold-button--sm {
+  min-height: 38px;
+  padding-inline: 14px;
+  font-size: 12px;
+}
+
+.hold-button--md {
+  min-height: 44px;
+  padding-inline: 20px;
+  font-size: 13px;
+}
+
+.hold-button--lg {
+  min-height: 52px;
+  padding-inline: 24px;
+  font-size: 15px;
+}
+
+.hold-button:focus-visible {
+  outline: 2px solid var(--hb-fill);
+  outline-offset: 3px;
+}
+
+.hold-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.hold-button[data-phase='holding'][data-input='pointer'] {
+  transform: scale(var(--hb-press));
+}
+
+.hold-button[data-glow='true'][data-phase='holding'],
+.hold-button[data-glow='true'][data-phase='done'] {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hb-fill) 22%, transparent);
+}
+
+.hold-button__label {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+}
+
+.hold-button__label > span {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.hold-button__icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.hold-button__idle,
+.hold-button__done {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: opacity 150ms ease;
+}
+
+.hold-button__done {
+  opacity: 0;
+}
+
+.hold-button[data-phase='done'] .hold-button__idle {
+  opacity: 0;
+}
+
+.hold-button[data-phase='done'] .hold-button__done {
+  opacity: 1;
+}
+
+.hold-button__fill {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--hb-fill);
+  color: var(--hb-fill-text);
+  clip-path: inset(0 calc((1 - var(--hb-progress)) * 100%) 0 0 round var(--hb-radius));
+  pointer-events: none;
+}
+
+.hold-button[data-direction='up'] .hold-button__fill {
+  clip-path: inset(calc((1 - var(--hb-progress)) * 100%) 0 0 0 round var(--hb-radius));
+}
+
+.hold-button[data-wave='true'] .hold-button__fill::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--hb-progress) * 100% - var(--hb-wave) / 2);
+  width: var(--hb-wave);
+  border-radius: 50%;
+  background: var(--hb-fill);
+  content: '';
+}
+
+.hold-button[data-direction='up'][data-wave='true'] .hold-button__fill::after {
+  top: calc((1 - var(--hb-progress)) * 100% - var(--hb-wave) / 2);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  width: 100%;
+  height: var(--hb-wave);
+}
+
+.hold-button__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hold-button {
+    transition: none;
+  }
+
+  .hold-button__idle,
+  .hold-button__done {
+    transition: none;
+  }
+}
