@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "node scripts/generate-seo-files.mjs && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "build": "node scripts/generate-seo-files.mjs && vite build && node scripts/verify-seo.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "seo:check": "node scripts/verify-seo.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "6.1.2",

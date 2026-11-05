@@ -1,14 +1,40 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { buildStructuredData, resolveSiteOrigin } from './seo.config.js';
+
+// The live property is already verified. Keep this public token as a fallback so
+// a deploy without VITE_GOOGLE_SITE_VERIFICATION cannot silently lose
+// Search Console verification. Set the environment variable to replace it.
+const DEFAULT_GOOGLE_SITE_VERIFICATION = 'YeseToEpjuTTwYEvh6J1m0eKX4BPsYN8Pxux97Gg3lQ';
+
+function sanitizeVerificationToken(value) {
+  return String(value || '').trim().replace(/[^A-Za-z0-9._-]/g, '');
+}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
-  const configuredUrl = process.env.VITE_SITE_URL || env.VITE_SITE_URL || process.env.URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  let siteOrigin = '';
-  if (configuredUrl) {
-    const parsed = new URL(configuredUrl.startsWith('https://') ? configuredUrl : `https://${configuredUrl}`);
-    if (parsed.protocol === 'https:' && parsed.pathname === '/' && !parsed.search && !parsed.hash) siteOrigin = parsed.origin;
-  }
+  const siteOrigin = resolveSiteOrigin(
+    process.env.VITE_SITE_URL,
+    env.VITE_SITE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.URL
+  );
+  const googleVerification = sanitizeVerificationToken(
+    process.env.VITE_GOOGLE_SITE_VERIFICATION ||
+    process.env.GOOGLE_SITE_VERIFICATION ||
+    env.VITE_GOOGLE_SITE_VERIFICATION ||
+    DEFAULT_GOOGLE_SITE_VERIFICATION
+  );
+  const bingVerification = sanitizeVerificationToken(
+    process.env.VITE_BING_SITE_VERIFICATION ||
+    process.env.BING_SITE_VERIFICATION ||
+    env.VITE_BING_SITE_VERIFICATION
+  );
+  const verificationTags = [
+    googleVerification ? `    <meta name="google-site-verification" content="${googleVerification}" />` : '',
+    bingVerification ? `    <meta name="msvalidate.01" content="${bingVerification}" />` : '',
+  ].filter(Boolean).join('\n');
+  const structuredData = JSON.stringify(buildStructuredData(siteOrigin)).replace(/</g, '\\u003c');
 
   return {
     plugins: [
@@ -16,20 +42,18 @@ export default defineConfig(({ mode }) => {
       {
         name: 'reloop-static-seo',
         transformIndexHtml(html) {
-          if (!siteOrigin) return html;
-          const metadata = [
-            `<link rel="canonical" href="${siteOrigin}/" />`,
-            `<script id="reloop-structured-data" type="application/ld+json">${JSON.stringify({
-              '@context': 'https://schema.org',
-              '@graph': [
-                { '@type': 'Organization', '@id': `${siteOrigin}/#organization`, name: 'Reloop', description: 'A neighbourhood marketplace for passing useful pre-loved things on.', url: `${siteOrigin}/`, logo: `${siteOrigin}/forest-door.jpg` },
-                { '@type': 'WebSite', '@id': `${siteOrigin}/#website`, name: 'Reloop', description: 'Discover pre-loved clothes, home goods, tech and more in your community. Browse local finds, compare item details, and arrange a direct handoff.', url: `${siteOrigin}/`, publisher: { '@id': `${siteOrigin}/#organization` }, inLanguage: 'en' },
-              ],
-            })}</script>`,
-          ].join('\n    ');
-          return html
-            .replace('content="/forest-door.jpg"', `content="${siteOrigin}/forest-door.jpg"`)
-            .replace('</head>', `    ${metadata}\n  </head>`);
+          let output = html.replaceAll('__SITE_ORIGIN__', siteOrigin);
+
+          output = output.replace(
+            '<!-- SEO_STRUCTURED_DATA -->',
+            `<script id="reloop-structured-data" type="application/ld+json">${structuredData}</script>`
+          );
+
+          if (verificationTags) {
+            output = output.replace('</head>', `${verificationTags}\n  </head>`);
+          }
+
+          return output;
         }
       },
     ],
