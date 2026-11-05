@@ -54,13 +54,18 @@ This project is prepared for Vercel, Netlify, and compatible static hosts.
 
 ### Vercel
 
-1. Push `/home/ubuntu/reloop-marketplace` to a private GitHub repository.
+1. Push this project to a private GitHub repository.
 2. Import the repository into Vercel.
 3. Vercel will use `vercel.json`, run `npm run build`, and publish `dist`.
 4. Add these production environment variables in Vercel:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SITE_URL` (the exact HTTPS production origin, required for sitemap and canonical SEO metadata)
+   - `VITE_GA4_ID` (optional; leave unset unless analytics consent tracking is configured)
 5. Add the final Vercel domain to Supabase Auth → URL Configuration → Site URL and Redirect URLs.
+6. In Supabase Storage, confirm the `listing-images` bucket and its RLS/storage policies are enabled before accepting uploads.
+
+For CLI deployment, install and authenticate the Vercel CLI, then run `vercel` for a preview or `vercel --prod` for production from this project directory. Never pass secrets as command-line arguments; configure them in Vercel Project Settings → Environment Variables.
 
 ### Netlify
 
