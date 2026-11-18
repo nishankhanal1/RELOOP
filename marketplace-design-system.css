@@ -2499,6 +2499,16 @@ footer {
 }
 
 .account-drawer {
+  color-scheme: light;
+  --ink: #24141d;
+  --ink-soft: #51474d;
+  --muted: #625960;
+  --subtle: #625960;
+  --rust-dark: #72451f;
+  --line: #8c7c70;
+  --surface: #e8dfd1;
+  --surface-strong: #e1d6c6;
+  --sage: #e7dece;
   position: absolute;
   top: 0;
   right: 0;
@@ -2507,6 +2517,7 @@ footer {
   overflow-y: auto;
   padding: 24px 30px;
   background: var(--paper);
+  color: var(--ink);
 }
 
 .drawer-topline {
@@ -2527,6 +2538,8 @@ footer {
 
 .drawer-close {
   position: static;
+  border-color: var(--line);
+  background: #fffaf1;
 }
 
 .drawer-identity {
@@ -2606,10 +2619,20 @@ footer {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: transparent;
-  color: var(--rust-dark);
+  background: var(--surface);
+  color: var(--forest);
   font-size: 12px;
   font-weight: 700;
+}
+
+.account-drawer button:focus-visible {
+  outline-color: var(--forest);
+}
+
+.account-signout:hover,
+.drawer-close:hover {
+  border-color: var(--forest);
+  background: var(--surface-strong);
 }
 
 .rating-box {
