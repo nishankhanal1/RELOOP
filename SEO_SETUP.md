@@ -1,17 +1,17 @@
 # Technical SEO setup
 
-Reloop is a Vite 8 + React 19 single-page marketplace. Its only public, crawlable URL is the homepage, `/`. Basket, inbox, offer, chat, account, profile-setup and listing-detail screens are client-side UI states rather than separate URLs, and they remain private or noindex as appropriate.
+Reloop is a Vite 8 + React 19 marketplace with six public, crawlable pages: `/`, `/how-it-works`, `/sell`, `/exchange`, `/secondhand` and `/about`. Each page is generated as static HTML with its own title, description, canonical URL and structured data, so search engines can discover its content without first rendering the marketplace app. Basket, inbox, offer, chat, account, profile-setup and listing-detail screens are client-side UI states rather than separate public URLs, and they remain private or noindex as appropriate.
 
 ## What ships in the build
 
-- A unique homepage title and meta description, canonical URL, Open Graph tags and Twitter card tags.
-- Organization / OnlineMarketplace, WebSite and WebPage JSON-LD with absolute URLs.
+- Unique titles, meta descriptions, canonical URLs, Open Graph tags and Twitter cards for the homepage and five supporting pages.
+- Organization / OnlineMarketplace, WebSite, WebPage and breadcrumb JSON-LD with absolute URLs.
 - `robots.txt` that allows the public site and points to the absolute sitemap URL.
-- `sitemap.xml` containing every public, crawlable URL. Today that is only the homepage; private state is deliberately excluded.
+- `sitemap.xml` containing all six public URLs; private app states are deliberately excluded.
 - A 1200 × 630 social image at `public/og-image.jpg` and a 512 × 512 organization logo at `public/reloop-logo.png`.
 - A build-time SEO check that fails the build if required metadata, JSON-LD, robots.txt, sitemap.xml or referenced local assets are missing or inconsistent.
 
-The page-level metadata is defined once in `seo.config.js`, injected into static HTML by `vite.config.js`, and kept in sync at runtime by `site-seo.js`. The cart view receives a unique `noindex, nofollow` title; returning to the marketplace restores the indexable homepage metadata.
+The page content and metadata are defined in `site-pages-content.js` and `seo.config.js`, injected into static HTML during the build, and kept in sync at runtime by `site-seo.js`. The cart view receives a unique `noindex, nofollow` title; returning to the marketplace restores the indexable homepage metadata.
 
 ## Before deploying
 
@@ -45,17 +45,17 @@ The build runs the same checks automatically, so a deployment with missing or du
 ## Google Search Console
 
 1. Deploy the updated build.
-2. Confirm `https://reloop-iota-blue.vercel.app/robots.txt` and `https://reloop-iota-blue.vercel.app/sitemap.xml` return HTTP 200 with the production origin.
-3. In Google Search Console, add a **URL-prefix** property for the exact origin, or a **Domain** property if you control DNS.
-4. Choose **HTML tag** verification, copy only the token from the supplied meta tag into `VITE_GOOGLE_SITE_VERIFICATION`, and redeploy.
-5. Return to Search Console and click **Verify**. The verification tag is injected into the built homepage.
-6. Open **Indexing → Sitemaps**, submit `https://reloop-iota-blue.vercel.app/sitemap.xml`, and confirm Google can fetch it.
-7. Use **URL Inspection** on `https://reloop-iota-blue.vercel.app/` and choose **Request indexing** if you want to prompt a recrawl. This is a request, not a guarantee; indexing and ranking depend on Google's crawl, quality and policy decisions.
+2. Confirm `https://reloop-iota-blue.vercel.app/robots.txt` and `https://reloop-iota-blue.vercel.app/sitemap.xml` return HTTP 200 and that the sitemap URLs use the production origin. Replace this example origin if `VITE_SITE_URL` is set to a custom domain.
+3. In [Google Search Console](https://search.google.com/search-console), add a **URL-prefix** property for the exact HTTPS site URL, or a **Domain** property if you control its DNS.
+4. Choose **HTML tag** verification and publish the token in Vercel as `VITE_GOOGLE_SITE_VERIFICATION`. A token is currently configured as a fallback; use the token shown for the property you add if it differs.
+5. Deploy, then return to Search Console and click **Verify**. The build injects the verification tag into every generated page.
+6. Open **Indexing → Sitemaps**, submit `https://reloop-iota-blue.vercel.app/sitemap.xml` (with your actual production origin), and confirm Google can fetch it.
+7. Use **URL Inspection** for the homepage and each public page: `/how-it-works`, `/sell`, `/exchange`, `/secondhand` and `/about`. If a page is eligible but not yet indexed, use **Request indexing**. This requests a recrawl; it does not guarantee indexing or a ranking.
+8. Check **Indexing → Pages** and **Performance → Search results** periodically for crawl/indexing issues, impressions, clicks and queries. Keep page text useful and accurate; do not repeat keywords unnaturally.
 
 ## Indexing scope and limits
 
-- Only the homepage is public and crawlable. The sitemap must not include cart, account, inbox, offers, chat, profile setup, seller profile, or listing-detail modal states.
+- The six public pages are crawlable. The sitemap must not include cart, account, inbox, offers, chat, profile setup, seller profile, or listing-detail modal states.
 - Marketplace listings currently have no stable public detail URLs. Their titles, descriptions, images and Product/Offer structured data cannot become individual search results until public listing routes exist. Do not add them to the sitemap before those routes exist.
-- The React app is client-rendered. Google can render JavaScript, but initial HTML contains only the app shell. Adding prerendering or public listing routes would improve crawl efficiency and long-tail discovery; it is outside this metadata pass.
-- Search Console verification, sitemap submission, indexing requests, backlinks and content publishing require the domain owner's Google account and cannot be completed from this repository.
-- No SEO implementation guarantees indexing or rankings. Avoid publishing thin keyword pages; add genuinely useful buying, care, reuse and local-community content as the marketplace grows.
+- Search Console verification, sitemap submission, indexing requests and performance reports require access to the site's Google account. Repository changes cannot sign in to or manage that account.
+- No SEO implementation can guarantee first place for “Reloop,” “exchange” or any other search. Search Console helps monitor crawling and search performance; rankings depend on Google's systems, competition, location and the usefulness and reputation of the site. Avoid thin keyword pages; add genuinely useful buying, care, reuse and local-community content as the marketplace grows.

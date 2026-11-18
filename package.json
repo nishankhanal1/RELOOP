@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "node scripts/generate-seo-files.mjs && vite build && node scripts/verify-seo.mjs",
+    "build": "node scripts/generate-seo-files.mjs && vite build && node scripts/generate-static-pages.mjs && node scripts/verify-seo.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "seo:check": "node scripts/verify-seo.mjs"
   },

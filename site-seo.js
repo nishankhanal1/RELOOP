@@ -1,6 +1,5 @@
 import {
   DEFAULT_SITE_URL,
-  buildStructuredData,
   buildViewSeo,
   normalizeSiteOrigin,
 } from './seo.config.js';
@@ -53,7 +52,7 @@ function setLink(rel, href) {
   elements.forEach((duplicate) => duplicate.remove());
 }
 
-function setStructuredData(origin) {
+function setStructuredData(data) {
   if (typeof document === 'undefined') return;
   let structuredData = document.getElementById('reloop-structured-data');
 
@@ -64,7 +63,7 @@ function setStructuredData(origin) {
     document.head.append(structuredData);
   }
 
-  structuredData.textContent = JSON.stringify(buildStructuredData(origin)).replace(/</g, '\\u003c');
+  structuredData.textContent = JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
 export function syncSiteSeo(view) {
@@ -99,7 +98,7 @@ export function syncSiteSeo(view) {
     link.href = seo.canonical;
   });
 
-  setStructuredData(siteOrigin);
+  setStructuredData(seo.structuredData);
 }
 
 export function loadConsentBasedAnalytics(consent) {

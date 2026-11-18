@@ -1,3 +1,5 @@
+import { PUBLIC_PAGES } from './site-pages-content.js';
+
 /**
  * Single source of truth for public SEO metadata.
  *
@@ -14,6 +16,7 @@ export const HOME_PATH = '/';
 export const HOME_TITLE = 'Reloop — Buy, Sell & Exchange Pre-Loved Goods Nearby';
 export const HOME_DESCRIPTION = 'Buy, sell and exchange new and pre-loved clothes, home goods, tech and accessories on Reloop. Browse local finds and message sellers directly.';
 export const HOME_ROBOTS = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
+export const PAGE_ROBOTS = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 export const CART_TITLE = 'Your Saved Finds — Reloop';
 export const CART_DESCRIPTION = 'Review the pre-loved finds you saved on Reloop.';
 export const CART_ROBOTS = 'noindex, nofollow';
@@ -64,45 +67,85 @@ export function resolveSiteOrigin(...candidates) {
   return DEFAULT_SITE_URL;
 }
 
+function buildOrganizationNode(siteOrigin) {
+  return {
+    '@type': ['Organization', 'OnlineMarketplace'],
+    '@id': `${siteOrigin}/#organization`,
+    name: SITE_NAME,
+    url: `${siteOrigin}/`,
+    description: ORGANIZATION_DESCRIPTION,
+    slogan: SITE_SLOGAN,
+    image: `${siteOrigin}${SOCIAL_IMAGE_PATH}`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteOrigin}${LOGO_PATH}`,
+      width: LOGO_WIDTH,
+      height: LOGO_HEIGHT,
+    },
+  };
+}
+
+function buildWebSiteNode(siteOrigin) {
+  return {
+    '@type': 'WebSite',
+    '@id': `${siteOrigin}/#website`,
+    name: SITE_NAME,
+    alternateName: 'Reloop Marketplace',
+    url: `${siteOrigin}/`,
+    description: HOME_DESCRIPTION,
+    publisher: { '@id': `${siteOrigin}/#organization` },
+    inLanguage: SITE_LANGUAGE,
+    isAccessibleForFree: true,
+  };
+}
+
+function buildHomeWebPageNode(siteOrigin) {
+  return {
+    '@type': 'WebPage',
+    '@id': `${siteOrigin}/#webpage`,
+    url: `${siteOrigin}/`,
+    name: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    isPartOf: { '@id': `${siteOrigin}/#website` },
+    about: { '@id': `${siteOrigin}/#organization` },
+    primaryImageOfPage: {
+      '@type': 'ImageObject',
+      url: `${siteOrigin}${SOCIAL_IMAGE_PATH}`,
+      width: SOCIAL_IMAGE_WIDTH,
+      height: SOCIAL_IMAGE_HEIGHT,
+    },
+    inLanguage: SITE_LANGUAGE,
+  };
+}
+
 export function buildStructuredData(origin = DEFAULT_SITE_URL) {
   const siteOrigin = normalizeSiteOrigin(origin) || DEFAULT_SITE_URL;
-  const homeUrl = `${siteOrigin}/`;
 
   return {
     '@context': 'https://schema.org',
     '@graph': [
-      {
-        '@type': ['Organization', 'OnlineMarketplace'],
-        '@id': `${siteOrigin}/#organization`,
-        name: SITE_NAME,
-        url: homeUrl,
-        description: ORGANIZATION_DESCRIPTION,
-        slogan: SITE_SLOGAN,
-        image: `${siteOrigin}${SOCIAL_IMAGE_PATH}`,
-        logo: {
-          '@type': 'ImageObject',
-          url: `${siteOrigin}${LOGO_PATH}`,
-          width: LOGO_WIDTH,
-          height: LOGO_HEIGHT,
-        },
-      },
-      {
-        '@type': 'WebSite',
-        '@id': `${siteOrigin}/#website`,
-        name: SITE_NAME,
-        alternateName: 'Reloop Marketplace',
-        url: homeUrl,
-        description: HOME_DESCRIPTION,
-        publisher: { '@id': `${siteOrigin}/#organization` },
-        inLanguage: SITE_LANGUAGE,
-        isAccessibleForFree: true,
-      },
+      buildOrganizationNode(siteOrigin),
+      buildWebSiteNode(siteOrigin),
+      buildHomeWebPageNode(siteOrigin),
+    ],
+  };
+}
+
+export function buildPageStructuredData(page, origin = DEFAULT_SITE_URL) {
+  const siteOrigin = normalizeSiteOrigin(origin) || DEFAULT_SITE_URL;
+  const canonical = `${siteOrigin}${page.path}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildOrganizationNode(siteOrigin),
+      buildWebSiteNode(siteOrigin),
       {
         '@type': 'WebPage',
-        '@id': `${siteOrigin}/#webpage`,
-        url: homeUrl,
-        name: HOME_TITLE,
-        description: HOME_DESCRIPTION,
+        '@id': `${canonical}#webpage`,
+        url: canonical,
+        name: page.title,
+        description: page.description,
         isPartOf: { '@id': `${siteOrigin}/#website` },
         about: { '@id': `${siteOrigin}/#organization` },
         primaryImageOfPage: {
@@ -111,7 +154,26 @@ export function buildStructuredData(origin = DEFAULT_SITE_URL) {
           width: SOCIAL_IMAGE_WIDTH,
           height: SOCIAL_IMAGE_HEIGHT,
         },
+        breadcrumb: { '@id': `${canonical}#breadcrumb` },
         inLanguage: SITE_LANGUAGE,
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${canonical}#breadcrumb`,
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: `${siteOrigin}/`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: page.breadcrumb,
+            item: canonical,
+          },
+        ],
       },
     ],
   };
@@ -151,7 +213,48 @@ export function buildHomeSeo(origin = DEFAULT_SITE_URL) {
   };
 }
 
+export function buildPageSeo(key, origin = DEFAULT_SITE_URL) {
+  const page = PUBLIC_PAGES[key];
+  if (!page) return buildHomeSeo(origin);
+
+  const siteOrigin = normalizeSiteOrigin(origin) || DEFAULT_SITE_URL;
+  const canonical = `${siteOrigin}${page.path}`;
+
+  return {
+    origin: siteOrigin,
+    canonical,
+    title: page.title,
+    description: page.description,
+    robots: PAGE_ROBOTS,
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
+      title: page.title,
+      description: page.description,
+      url: canonical,
+      image: `${siteOrigin}${SOCIAL_IMAGE_PATH}`,
+      imageWidth: String(SOCIAL_IMAGE_WIDTH),
+      imageHeight: String(SOCIAL_IMAGE_HEIGHT),
+      imageType: SOCIAL_IMAGE_TYPE,
+      imageAlt: SOCIAL_IMAGE_ALT,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.title,
+      description: page.description,
+      image: `${siteOrigin}${SOCIAL_IMAGE_PATH}`,
+      imageAlt: SOCIAL_IMAGE_ALT,
+    },
+    structuredData: buildPageStructuredData(page, siteOrigin),
+  };
+}
+
 export function buildViewSeo(view, origin = DEFAULT_SITE_URL) {
+  if (Object.prototype.hasOwnProperty.call(PUBLIC_PAGES, view)) {
+    return buildPageSeo(view, origin);
+  }
+
   const home = buildHomeSeo(origin);
   if (view !== 'cart') return home;
 

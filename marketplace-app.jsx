@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import HoldButton from './HoldButton';
 import { addListingComment, COMMUNITY_LISTING_PAGE_SIZE, createOffer, deleteListing, ensureProfile, getCommunityListings, getListingComments, getProfile, getBasketItems, saveBasketItem, removeBasketItem, getDirectMessages, getPublicProfile, getFriendlyError, isSupabaseConfigured, saveListing, sendDirectMessage, signInWithEmail, signInWithGoogle, signOut, subscribeToListings, supabase, updateListing, updateProfile, uploadListingImage } from './supabase-client';
 import { loadConsentBasedAnalytics, syncSiteSeo } from './site-seo';
+import { PublicPage, getPublicPageKey } from './site-pages';
 import './marketplace-design-system.css';
 
 const Icon = ({ name, size = 20 }) => {
@@ -85,6 +86,7 @@ function App() {
   const [activeSellerId, setActiveSellerId] = useState(null);
   const [toast, setToast] = useState('');
   const [view, setView] = useState('home');
+  const [page, setPage] = useState(() => getPublicPageKey(window.location.pathname) || 'home');
   const [showSell, setShowSell] = useState(false);
   const [showInbox, setShowInbox] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -116,15 +118,24 @@ function App() {
   const hasModalOpen = Boolean(activeProduct || activeSellerId || showSell || showInbox || showAuth || showOffer || showChat || showProfileSetup || showAccount || legalPage);
 
   useEffect(() => {
-    syncSiteSeo(view);
-  }, [view]);
+    syncSiteSeo(page === 'home' ? (view === 'cart' ? 'cart' : 'home') : page);
+  }, [page, view]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setPage(getPublicPageKey(window.location.pathname) || 'home');
+      setView('home');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   useEffect(() => {
     loadConsentBasedAnalytics(cookieConsent);
   }, [cookieConsent]);
 
   useEffect(() => {
-    if (view !== 'home' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    if (page !== 'home' || view !== 'home' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || '')) return undefined;
 
@@ -135,7 +146,7 @@ function App() {
     }
     const timeoutId = window.setTimeout(enableVideo, 1200);
     return () => window.clearTimeout(timeoutId);
-  }, [view]);
+  }, [page, view]);
 
   useEffect(() => {
     if (!hasModalOpen) return undefined;
@@ -549,19 +560,35 @@ function App() {
     }
   };
 
-  const openBrowse = () => {
+  const navigateTo = (path) => {
+    const nextPage = getPublicPageKey(path) || 'home';
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, '', path);
+    }
+    setPage(nextPage);
     setView('home');
-    window.setTimeout(() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' }), 0);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
+
+  const goToHomeSection = (id) => {
+    navigateTo('/');
+    if (id) {
+      window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 0);
+    }
+  };
+
+  const openBrowse = () => {
+    goToHomeSection('browse');
   };
 
   const focusSearch = () => {
-    setView('home');
+    goToHomeSection();
     window.setTimeout(() => document.querySelector('.search-input')?.focus(), 0);
   };
 
   return <div className="app-shell">
-    <header className={`topbar ${view === 'home' ? 'topbar--hero' : ''} ${heroHeaderAtTop ? '' : 'topbar--scrolled'}`}>
-      <button className="wordmark mainframe-wordmark" onClick={() => { setView('home'); setShowSell(false); setShowInbox(false); }}><span className="mark">r</span><span>reloop</span></button>
+    <header className={`topbar ${page === 'home' && view === 'home' ? 'topbar--hero' : ''} ${heroHeaderAtTop ? '' : 'topbar--scrolled'}`}>
+      <button className="wordmark mainframe-wordmark" onClick={() => { navigateTo('/'); setShowSell(false); setShowInbox(false); }}><span className="mark">r</span><span>reloop</span></button>
       <nav className="main-nav mainframe-nav" aria-label="Main navigation"><button onClick={openBrowse}>Browse</button><button onClick={() => requireMember(() => setShowSell(true))}>Post an item</button><button onClick={() => requireMember(() => setShowInbox(true))}>Inbox</button></nav>
       <button className={`mobile-menu-toggle ${mobileMenuOpen ? 'is-open' : ''}`} aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation" onClick={() => setMobileMenuOpen(open => !open)}><span/><span/><span/></button>
       <div className="top-actions mainframe-top-actions">{user ? <button className="avatar" title="Open profile" onClick={() => setShowAccount(true)}>{(profile?.username || user.user_metadata?.name || user.email || 'R').slice(0, 2).toUpperCase()}</button> : <button className="sign-in-link" onClick={() => setShowAuth(true)}>Sign in</button>}</div>
@@ -573,7 +600,7 @@ function App() {
       <button onClick={() => { setMobileMenuOpen(false); user ? setShowAccount(true) : setShowAuth(true); }}>{user ? 'Your account' : 'Sign in'}</button>
     </div>
 
-    {view === 'cart' ? <CartView user={user} cart={cart} removeFromCart={removeFromCart} onBack={() => setView('home')} onOpen={(item) => setActiveProduct(item)} onMessage={(item) => { if (user?.id && item.sellerId && String(user.id) === String(item.sellerId)) return notify('This is your listing. Buyers can message you from the listing.'); requireMember(() => { setChatProduct(item); setShowChat(true); }); }} notify={notify} /> : <>
+    {page !== 'home' ? <PublicPage pageKey={page} onNavigate={navigateTo} onBrowse={openBrowse} /> : view === 'cart' ? <CartView user={user} cart={cart} removeFromCart={removeFromCart} onBack={() => setView('home')} onOpen={(item) => setActiveProduct(item)} onMessage={(item) => { if (user?.id && item.sellerId && String(user.id) === String(item.sellerId)) return notify('This is your listing. Buyers can message you from the listing.'); requireMember(() => { setChatProduct(item); setShowChat(true); }); }} notify={notify} /> : <>
       <main>
         <div className="reloop-video-stage" ref={heroStageRef}>
           <video ref={heroVideoRef} className="reloop-hero-video" src={heroVideoReady ? 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260530_042513_df96a13b-6155-4f6e-8b93-c9dee66fba08.mp4' : undefined} muted playsInline preload={heroVideoReady ? 'metadata' : 'none'} aria-hidden="true" />
@@ -635,10 +662,25 @@ function App() {
             </div>
           </div>
         </section>
-        <section className="how-section" data-reveal="section" id="how-it-works"><div className="how-intro"><p className="eyebrow">How it works</p><h2>From shelf to <em>someone new.</em></h2><p>Reloop helps neighbours find items, ask questions, and arrange a direct handoff.</p><button className="button button-outline" onClick={() => requireMember(() => setShowSell(true))}>List an item <Icon name="arrow" size={17}/></button></div><div className="steps"><div className="step"><span>01</span><div><h3>Share the details</h3><p>Add a real photo, describe the condition, and set a minimum cash offer.</p></div></div><div className="step"><span>02</span><div><h3>Talk it through</h3><p>Ask questions or suggest a cash offer, an exchange, or both.</p></div></div><div className="step"><span>03</span><div><h3>Arrange the handoff</h3><p>Agree on the details directly. Reloop does not collect payment or arrange delivery.</p></div></div></div></section>
+        <section className="how-section" data-reveal="section" id="how-it-works"><div className="how-intro"><p className="eyebrow">How it works</p><h2>From shelf to <em>someone new.</em></h2><p>Reloop helps neighbours find items, ask questions, and arrange a direct handoff.</p><div className="how-actions"><button className="button button-outline" onClick={() => requireMember(() => setShowSell(true))}>List an item <Icon name="arrow" size={17}/></button><a className="how-guide-link" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigateTo('/how-it-works'); }}>Read the full guide <Icon name="arrow" size={14}/></a></div></div><div className="steps"><div className="step"><span>01</span><div><h3>Share the details</h3><p>Add a real photo, describe the condition, and set a minimum cash offer.</p></div></div><div className="step"><span>02</span><div><h3>Talk it through</h3><p>Ask questions or suggest a cash offer, an exchange, or both.</p></div></div><div className="step"><span>03</span><div><h3>Arrange the handoff</h3><p>Agree on the details directly. Reloop does not collect payment or arrange delivery.</p></div></div></div></section>
       </main>
-      <footer data-reveal="section"><div className="footer-brand"><span className="mark">r</span><span>reloop</span><p>Pre-loved, passed on.</p></div><nav className="footer-links" aria-label="Footer navigation"><button onClick={() => document.getElementById('browse')?.scrollIntoView({ behavior: 'smooth' })}>Browse</button><button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>How it works</button><button onClick={() => setLegalPage('guidelines')}>Community guidelines</button><button onClick={() => setLegalPage('terms')}>Terms</button><button onClick={() => setLegalPage('privacy')}>Privacy</button><button onClick={() => setCookieConsent(null)}>Cookie settings</button></nav><span className="footer-note">A better place for useful things.</span></footer>
     </>}
+    {view !== 'cart' && <footer data-reveal="section">
+      <div className="footer-brand"><span className="mark">r</span><span>reloop</span><p>Pre-loved, passed on.</p></div>
+      <nav className="footer-links" aria-label="Footer navigation">
+        <a href="/#browse" onClick={(event) => { event.preventDefault(); openBrowse(); }}>Browse</a>
+        <a href="/how-it-works" onClick={(event) => { event.preventDefault(); navigateTo('/how-it-works'); }}>How it works</a>
+        <a href="/sell" onClick={(event) => { event.preventDefault(); navigateTo('/sell'); }}>Sell an item</a>
+        <a href="/exchange" onClick={(event) => { event.preventDefault(); navigateTo('/exchange'); }}>Exchange</a>
+        <a href="/secondhand" onClick={(event) => { event.preventDefault(); navigateTo('/secondhand'); }}>Secondhand</a>
+        <a href="/about" onClick={(event) => { event.preventDefault(); navigateTo('/about'); }}>About</a>
+        <button onClick={() => setLegalPage('guidelines')}>Community guidelines</button>
+        <button onClick={() => setLegalPage('terms')}>Terms</button>
+        <button onClick={() => setLegalPage('privacy')}>Privacy</button>
+        <button onClick={() => setCookieConsent(null)}>Cookie settings</button>
+      </nav>
+      <span className="footer-note">A better place for useful things.</span>
+    </footer>}
 
     {!cookieConsent && <CookieBanner analyticsConfigured={/^G-[A-Z0-9]+$/i.test(import.meta.env.VITE_GA4_ID || '')} onAccept={() => saveCookiePreference('accepted')} onEssential={() => saveCookiePreference('essential')} onPrivacy={() => setLegalPage('privacy')} />}
     {activeProduct && <ProductModal product={activeProduct} user={user} onClose={() => setActiveProduct(null)} onAdd={() => { addToCart(activeProduct); setActiveProduct(null); }} onMessage={() => requireMember(() => { setActiveProduct(null); setChatProduct(activeProduct); setShowChat(true); })} onOffer={() => requireMember(() => setShowOffer(true))} onSellerProfile={() => { setActiveProduct(null); setActiveSellerId(activeProduct.sellerId); }} onDeleted={() => { setProducts(items => items.filter(item => item.id !== activeProduct.id)); setActiveProduct(null); notify('Listing deleted'); }} onUpdated={() => { setActiveProduct(null); notify('Listing updated'); }} />}
