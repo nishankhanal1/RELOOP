@@ -24,6 +24,8 @@ Set these variables in Vercel → Project Settings → Environment Variables (Pr
 
 `VITE_SITE_URL` is validated. A non-HTTPS URL, a URL with a path/query/hash, or a malformed value fails the production build rather than publishing a bad canonical.
 
+Hosted email and Google sign-in callbacks return to `VITE_SITE_URL` (or the configured production fallback), even if sign-in started from a temporary preview URL. Keep that production origin in Supabase Authentication → URL Configuration → Redirect URLs. Local Vite development callbacks continue to return to the local development origin.
+
 ## Build and verify locally
 
 ```bash

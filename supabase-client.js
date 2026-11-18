@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { DEFAULT_SITE_URL, normalizeSiteOrigin } from './seo.config.js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -16,6 +17,10 @@ export const supabase = isSupabaseConfigured
     }))
   : null;
 
+function getAuthRedirectUrl() {
+  if (import.meta.env.DEV) return window.location.origin;
+  return normalizeSiteOrigin(import.meta.env.VITE_SITE_URL) || DEFAULT_SITE_URL;
+}
 
 const isMissingCurrencyColumn = (error) => /column .*currency.*(?:does not exist|schema cache)|could not find the 'currency' column/i.test(error?.message || '');
 
@@ -38,7 +43,7 @@ export async function signInWithGoogle() {
   if (!settings?.external?.google) {
     throw new Error('Google sign-in is not enabled in Supabase yet. Open Authentication → Providers → Google and enable it.');
   }
-  const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin, queryParams: { prompt: 'select_account' } } });
+  const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: getAuthRedirectUrl(), queryParams: { prompt: 'select_account' } } });
   if (error) throw new Error(`Google sign-in is unavailable: ${error.message}`);
   return data;
 }
@@ -47,7 +52,7 @@ export async function signInWithEmail(email) {
   if (!supabase) throw new Error('Supabase is not configured yet.');
   const normalizedEmail = email.trim().toLowerCase();
   if (!normalizedEmail || !normalizedEmail.includes('@')) throw new Error('Enter a valid email address.');
-  const { error } = await supabase.auth.signInWithOtp({ email: normalizedEmail, options: { emailRedirectTo: window.location.origin } });
+  const { error } = await supabase.auth.signInWithOtp({ email: normalizedEmail, options: { emailRedirectTo: getAuthRedirectUrl() } });
   if (error) throw new Error(`Email sign-in is unavailable: ${error.message}`);
 }
 
