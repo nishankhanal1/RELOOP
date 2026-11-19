@@ -12,7 +12,7 @@
   --royal-soft: #d0a876;
   --gold: #d9b67a;
   --rust: var(--gold);
-  --rust-dark: var(--royal);
+  --rust-dark: #72451f;
   --paper: #f3ecdf;
   --surface: rgba(255, 255, 255, 0.04);
   --surface-strong: rgba(255, 255, 255, 0.08);
@@ -25,6 +25,33 @@
   --radius: 18px;
   --radius-small: 12px;
   --content-width: 1440px;
+}
+
+.browse-section,
+.how-section,
+.modal,
+.confirm-card,
+.cart-page,
+.cookie-banner,
+.info-page,
+.account-drawer {
+  color-scheme: light;
+  --ink: #32151f;
+  --ink-soft: #51474d;
+  --forest: #651b3b;
+  --forest-deep: #2a0d18;
+  --royal: #72451f;
+  --rust: #651b3b;
+  --rust-dark: #72451f;
+  --paper: #f3ecdf;
+  --surface: #fff;
+  --surface-strong: #e8dfd1;
+  --sage: #e7dece;
+  --exchange-surface: #e7dece;
+  --line: #8c7c70;
+  --muted: #51474d;
+  --subtle: #65545a;
+  --placeholder: #75656a;
 }
 
 /* Video-led Reloop hero */
@@ -52,9 +79,9 @@
 .mainframe-nav { display: none; align-items: center; gap: 0; font-size: 23px; }
 .mainframe-nav span { color: #000; }
 .mainframe-get-in-touch { display: none; font-size: 23px; text-decoration: underline; text-underline-offset: 2px; }
-.reloop-video-stage { background: #f7f7f7; }
+.reloop-video-stage { background: #161313 url('/forest-door.jpg') center / cover no-repeat; }
 .reloop-video-stage { --hero-pointer-x: 50%; --hero-pointer-y: 50%; }
-.reloop-hero-overlay { background: linear-gradient(90deg, rgba(255,255,255,.4), transparent 70%), linear-gradient(0deg, rgba(255,255,255,.16), transparent 55%); }
+.reloop-hero-overlay { background: linear-gradient(90deg, rgba(247,247,247,.96), rgba(247,247,247,.86) 32%, rgba(247,247,247,.55) 58%, transparent 76%), linear-gradient(0deg, rgba(247,247,247,.16), transparent 55%); }
 .hero-effects { position: absolute; z-index: 1; inset: 0; overflow: hidden; pointer-events: none; }
 .hero-effects::before { position: absolute; inset: 0; content: ''; background-image: linear-gradient(rgba(0,0,0,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.07) 1px, transparent 1px); background-size: 72px 72px; mask-image: linear-gradient(90deg, rgba(0,0,0,.8), transparent 72%); opacity: .42; }
 .hero-effects::after { position: absolute; inset: 0; content: ''; background: radial-gradient(circle 180px at var(--hero-pointer-x) var(--hero-pointer-y), rgba(255,255,255,.38), transparent 70%); mix-blend-mode: screen; transition: background-position .18s ease; }
@@ -79,6 +106,9 @@
 .reloop-video-actions .hero-pill-outline { color: #000; border-color: #000; background: transparent; gap: 8px; }
 .reloop-video-actions .hero-pill-outline:hover { color: #fff; background: #000; }
 .mobile-navigation a { display: block; color: #000; font-size: 32px; font-weight: 500; text-decoration: none; }
+@media (max-width: 767px) {
+  .reloop-hero-overlay { background: linear-gradient(0deg, rgba(247,247,247,.98), rgba(247,247,247,.94) 45%, rgba(247,247,247,.65) 72%, transparent); }
+}
 @media (min-width: 640px) { .mainframe-wordmark { font-size: 26px; } .mainframe-asterisk { font-size: 30px; } .reloop-video-actions .hero-pill { font-size: 15px; } }
 @media (min-width: 768px) { .mainframe-nav, .mainframe-get-in-touch { display: flex; } .mainframe-top-actions { justify-content: flex-end; } }
 
@@ -89,6 +119,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 92px;
+  overflow-x: clip;
 }
 
 body {
@@ -125,7 +156,7 @@ button {
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  box-shadow: inset 0 0 0 1px currentColor;
 }
 
 button:focus-visible,
@@ -133,13 +164,20 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(134, 29, 57, 0.42);
+  outline: 3px solid #651b3b;
   outline-offset: 3px;
+  box-shadow: 0 0 0 5px #f3ecdf;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--placeholder, #75656a);
+  opacity: 1;
 }
 
 ::selection {
-  background: var(--sage);
-  color: var(--forest-deep);
+  background: #e7dece;
+  color: #24141d;
 }
 
 .app-shell {
@@ -201,9 +239,10 @@ textarea:focus-visible {
   top: 0;
   right: 0;
   left: 0;
-  border-bottom-color: transparent;
-  background: transparent;
-  color: var(--paper);
+  border-bottom-color: rgba(36, 20, 29, 0.14);
+  background: rgba(247, 247, 247, 0.96);
+  color: #24141d;
+  backdrop-filter: blur(14px);
   transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
 }
 
@@ -212,12 +251,12 @@ textarea:focus-visible {
 .topbar--hero .bag-button,
 .topbar--hero .sign-in-link,
 .topbar--hero .mobile-menu-toggle {
-  color: #fff;
+  color: #24141d;
 }
 
 .topbar--hero .mark {
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
+  background: var(--forest);
   color: #fff;
 }
 
@@ -225,11 +264,11 @@ textarea:focus-visible {
 .topbar--hero .bag-button:hover,
 .topbar--hero .main-nav button:hover,
 .topbar--hero .sign-in-link:hover {
-  color: #F2D8CF;
+  color: var(--forest);
 }
 
 .topbar--hero .mobile-menu-toggle span {
-  background: var(--paper);
+  background: #24141d;
 }
 
 .topbar--hero.topbar--scrolled {
@@ -622,7 +661,7 @@ textarea:focus-visible {
 .hero-pill:hover {
   border-color: var(--rust);
   background: var(--rust);
-  color: #fff;
+  color: var(--forest-deep);
 }
 
 .hero-pill-outline {
@@ -939,11 +978,6 @@ h2 em {
   position: relative;
   isolation: isolate;
   padding: 104px clamp(24px, 8vw, 120px) 112px;
-  --ink: #24141d;
-  --ink-soft: #51474d;
-  --muted: #625960;
-  --subtle: #81777c;
-  --line: rgba(65, 19, 33, 0.14);
   background: #f7f7f7;
 }
 
@@ -1540,7 +1574,7 @@ h2 em {
 .how-intro > p:not(.eyebrow) {
   max-width: 390px;
   margin: 20px 0 24px;
-  color: #706064;
+  color: #51474d;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -1573,7 +1607,7 @@ h2 em {
 .step p {
   max-width: 460px;
   margin: 0;
-  color: #706064;
+  color: #51474d;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -1715,7 +1749,7 @@ footer {
 }
 
 .footer-brand .mark {
-  background: #B38A55;
+  background: #72451f;
 }
 
 .footer-brand p {
@@ -1770,7 +1804,7 @@ footer {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--paper);
-  color: var(--forest-deep);
+  color: var(--ink);
 }
 
 .modal-close,
@@ -1785,7 +1819,7 @@ footer {
   place-items: center;
   border: 1px solid transparent;
   border-radius: var(--radius-small);
-  background: transparent;
+  background: #fff;
   color: var(--forest-deep);
 }
 
@@ -1795,9 +1829,9 @@ footer {
   right: 16px;
   width: 40px;
   height: 40px;
-  border: 1px solid rgba(232, 218, 215, 0.9);
+  border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(255, 252, 250, 0.94);
+  background: #fff;
   color: var(--forest-deep);
   box-shadow: 0 5px 16px rgba(65, 19, 33, 0.12);
   backdrop-filter: blur(12px);
@@ -1867,7 +1901,7 @@ footer {
   position: absolute;
   inset: 45% 0 0;
   z-index: 1;
-  background: linear-gradient(180deg, transparent 10%, rgba(10, 28, 19, 0.08) 44%, rgba(10, 28, 19, 0.55));
+  background: linear-gradient(180deg, transparent 10%, rgba(10, 28, 19, 0.08) 44%, rgba(10, 28, 19, 0.72));
   content: "";
   pointer-events: none;
 }
@@ -2409,7 +2443,7 @@ footer {
 }
 
 .photo-upload input:focus-visible + label {
-  outline: 3px solid #a94f3470;
+  outline: 3px solid #651b3b;
   outline-offset: 3px;
 }
 
@@ -2499,16 +2533,6 @@ footer {
 }
 
 .account-drawer {
-  color-scheme: light;
-  --ink: #24141d;
-  --ink-soft: #51474d;
-  --muted: #625960;
-  --subtle: #625960;
-  --rust-dark: #72451f;
-  --line: #8c7c70;
-  --surface: #e8dfd1;
-  --surface-strong: #e1d6c6;
-  --sage: #e7dece;
   position: absolute;
   top: 0;
   right: 0;
@@ -2672,7 +2696,7 @@ footer {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #a7aa9f;
+  color: var(--placeholder);
   font-size: 23px;
 }
 
@@ -2758,6 +2782,7 @@ footer {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--paper);
+  color: var(--ink);
 }
 
 .confirm-icon {
@@ -2811,7 +2836,7 @@ footer {
   right: 12px;
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(65, 19, 33, 0.14);
+  border: 1px solid var(--line);
   border-radius: 50%;
   color: var(--forest-deep);
   transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
@@ -2819,8 +2844,8 @@ footer {
 
 .auth-modal .modal-close:hover {
   transform: rotate(90deg);
-  border-color: rgba(65, 19, 33, 0.28);
-  background: rgba(255, 255, 255, 0.72);
+  border-color: var(--forest);
+  background: #fff;
 }
 
 .auth-modal .auth-mark {
@@ -2870,12 +2895,12 @@ footer {
 }
 
 .google-button:hover {
-  border-color: #a5aa9e;
+  border-color: var(--forest);
   background: #f8f8f4;
 }
 
 .google-g {
-  color: #4285f4;
+  color: #1a5dab;
   font-family: Arial, sans-serif;
   font-size: 17px;
   font-weight: 700;
@@ -2913,11 +2938,12 @@ footer {
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
   background: white;
+  color: var(--ink);
   font-size: 13px;
 }
 
 .auth-email-input::placeholder {
-  color: #999b92;
+  color: var(--placeholder);
 }
 
 .auth-email-button {
@@ -3087,6 +3113,8 @@ footer {
 .cart-page {
   min-height: calc(100vh - 72px);
   padding: 50px clamp(24px, 8vw, 120px) 90px;
+  background: linear-gradient(115deg, #f3ecdf, #e8e1d6);
+  color: var(--ink);
 }
 
 .cart-topline {
@@ -3417,11 +3445,11 @@ footer {
   max-width: 920px;
   margin: 0 auto;
   padding: 18px 20px;
-  border: 1px solid rgba(65, 19, 33, 0.16);
+  border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255, 250, 242, 0.97);
   box-shadow: 0 18px 55px rgba(20, 8, 14, 0.22);
-  color: #24141d;
+  color: var(--ink);
   backdrop-filter: blur(16px);
 }
 
@@ -3491,14 +3519,15 @@ footer {
 .legal-modal .modal-close {
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(65, 19, 33, 0.16);
+  border: 1px solid var(--line);
+  background: #fff;
   border-radius: 50%;
   transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
 .legal-modal .modal-close:hover {
   transform: rotate(90deg);
-  border-color: rgba(65, 19, 33, 0.3);
+  border-color: var(--forest);
   background: #f1e4d5;
 }
 
@@ -4429,7 +4458,7 @@ footer {
 
 .info-hero .eyebrow {
   margin-bottom: 16px;
-  color: #9c6a3a;
+  color: #72451f;
 }
 
 .info-hero h1 {
@@ -4554,7 +4583,7 @@ footer {
 }
 
 .info-faq .eyebrow {
-  color: #9c6a3a;
+  color: #72451f;
 }
 
 .info-faq-list {
@@ -4660,7 +4689,7 @@ footer {
 }
 
 .info-related .eyebrow {
-  color: #9c6a3a;
+  color: #72451f;
 }
 
 .info-related > div {

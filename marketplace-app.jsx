@@ -340,7 +340,9 @@ function App() {
 
     if (callbackError) {
       setAuthCallbackError(callbackError);
-      window.history.replaceState({}, document.title, window.location.pathname);
+      const callbackUrl = new URL(window.location.href);
+      ['error', 'error_description', 'error_code', 'code', 'sb_flow_id'].forEach((key) => callbackUrl.searchParams.delete(key));
+      window.history.replaceState(window.history.state, document.title, callbackUrl.toString());
     }
   }, []);
 
@@ -366,7 +368,25 @@ function App() {
       }
     };
 
-    supabase.auth.getSession().then(({ data }) => hydrate(data.session?.user || null));
+    const callbackHasCode = new URLSearchParams(window.location.search).has('code');
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        setAuthCallbackError(getFriendlyError(error, 'We could not complete sign-in. Please try again.'));
+      } else if (callbackHasCode && !data.session) {
+        setAuthCallbackError('This sign-in link could not be verified. Request a fresh link and open it in the same browser where you started sign-in.');
+      }
+
+      if (callbackHasCode && (error || !data.session)) {
+        const callbackUrl = new URL(window.location.href);
+        ['code', 'sb_flow_id'].forEach((key) => callbackUrl.searchParams.delete(key));
+        window.history.replaceState(window.history.state, document.title, callbackUrl.toString());
+      }
+
+      hydrate(data.session?.user || null);
+    }).catch((error) => {
+      setAuthCallbackError(getFriendlyError(error, 'We could not complete sign-in. Please try again.'));
+      hydrate(null);
+    });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       hydrate(session?.user || null);
@@ -603,7 +623,7 @@ function App() {
     {page !== 'home' ? <PublicPage pageKey={page} onNavigate={navigateTo} onBrowse={openBrowse} /> : view === 'cart' ? <CartView user={user} cart={cart} removeFromCart={removeFromCart} onBack={() => setView('home')} onOpen={(item) => setActiveProduct(item)} onMessage={(item) => { if (user?.id && item.sellerId && String(user.id) === String(item.sellerId)) return notify('This is your listing. Buyers can message you from the listing.'); requireMember(() => { setChatProduct(item); setShowChat(true); }); }} notify={notify} /> : <>
       <main>
         <div className="reloop-video-stage" ref={heroStageRef}>
-          <video ref={heroVideoRef} className="reloop-hero-video" src={heroVideoReady ? 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260530_042513_df96a13b-6155-4f6e-8b93-c9dee66fba08.mp4' : undefined} muted playsInline preload={heroVideoReady ? 'metadata' : 'none'} aria-hidden="true" />
+          <video ref={heroVideoRef} className="reloop-hero-video" src={heroVideoReady ? 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260530_042513_df96a13b-6155-4f6e-8b93-c9dee66fba08.mp4' : undefined} poster="/forest-door.jpg" muted playsInline preload={heroVideoReady ? 'metadata' : 'none'} aria-hidden="true" />
           <div className="reloop-hero-overlay" aria-hidden="true" />
           <div className="hero-effects" aria-hidden="true"><span className="hero-guide hero-guide-top"/><span className="hero-guide hero-guide-bottom"/><span className="hero-guide hero-guide-side"/><span className="hero-crosshair hero-crosshair-one"/><span className="hero-crosshair hero-crosshair-two"/><span className="hero-grain"/></div>
           <section className="reloop-video-hero">
@@ -689,7 +709,7 @@ function App() {
     {showInbox && user && <InboxModal user={user} onClose={() => setShowInbox(false)} />}
     {showOffer && activeProduct && <OfferModal product={activeProduct} user={user} onClose={() => setShowOffer(false)} onSubmitted={() => { setShowOffer(false); notify('Your offer is now visible to the community'); }} />}
     {showChat && chatProduct && <ChatModal product={chatProduct} user={user} onClose={() => setShowChat(false)} onSent={() => { setShowChat(false); notify('Private message sent'); }} />}
-    {showAuth && <AuthModal onClose={() => setShowAuth(false)} onGoogle={async () => { try { await signInWithGoogle(); } catch (error) { notify(error.message); } }} onEmail={async (email) => { try { await signInWithEmail(email); return true; } catch (error) { notify(error.message); return false; } }} configured={isSupabaseConfigured} />}
+    {showAuth && <AuthModal onClose={() => setShowAuth(false)} onGoogle={signInWithGoogle} onEmail={signInWithEmail} configured={isSupabaseConfigured} />}
     {user && showProfileSetup && <ProfileSetupModal user={user} onSaved={(savedProfile) => { setProfile(savedProfile); setShowProfileSetup(false); notify('Profile complete — you can now post and exchange'); }} onSignOut={handleSignOut} />}
     {user && showAccount && <AccountModal user={user} profile={profile} onClose={() => setShowAccount(false)} onSignOut={handleSignOut} />}
     {legalPage && <LegalModal page={legalPage} onClose={() => setLegalPage(null)} />}
@@ -900,7 +920,60 @@ function InboxModal({ user, onClose }) {
     </div>
   </div>;
 }
-function AuthModal({ onClose, onGoogle, onEmail, configured }) { const [email, setEmail] = useState(''); const [sending, setSending] = useState(false); const [sent, setSent] = useState(false); const emailSubmit = async () => { setSending(true); const success = await onEmail(email); setSent(Boolean(success)); setSending(false); }; return <div className="overlay" onClick={event => { if (event.target === event.currentTarget) onClose(); }}><div className="modal auth-modal"><button className="modal-close" aria-label="Back to dashboard" title="Back to dashboard" onClick={onClose}><Icon name="close"/></button><div className="auth-mark">r</div><p className="eyebrow">Your corner of the loop</p><h2>Sign in to <em>reloop.</em></h2><p className="form-lede">Use Google or get a secure sign-in link by email. No password to remember.</p><button className="google-button" onClick={onGoogle}><span className="google-g">G</span> Continue with Google</button><div className="auth-divider"><span>or use email</span></div><input className="auth-email-input" type="email" value={email} onChange={e => { setEmail(e.target.value); setSent(false); }} placeholder="you@example.com"/><button className="button button-dark auth-email-button" disabled={sending || !email} onClick={emailSubmit}>{sending ? 'Sending link...' : 'Email me a sign-in link'} <Icon name="arrow" size={16}/></button>{sent && <div className="auth-success-note">Link sent. Check your inbox and spam folder, then click the secure Reloop link to finish signing in.</div>}{!configured && <div className="auth-config-note">Supabase is not connected in this preview yet. Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to activate authentication.</div>}<small className="form-footnote">Email links are verified by Supabase Auth. Google requires the Google provider to be enabled in Supabase.</small></div></div> }
+function AuthModal({ onClose, onGoogle, onEmail, configured }) {
+  const [email, setEmail] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [startingGoogle, setStartingGoogle] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const startGoogleSignIn = async () => {
+    setStartingGoogle(true);
+    setError('');
+    try {
+      await onGoogle();
+    } catch (signInError) {
+      setError(getFriendlyError(signInError, 'Google sign-in could not be started. Please try again.'));
+      setStartingGoogle(false);
+    }
+  };
+
+  const sendEmailLink = async () => {
+    setSendingEmail(true);
+    setError('');
+    setSent(false);
+    try {
+      await onEmail(email);
+      setSent(true);
+    } catch (signInError) {
+      setError(getFriendlyError(signInError, 'The sign-in link could not be sent. Please try again.'));
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  return <div className="overlay" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="modal auth-modal">
+      <button type="button" className="modal-close" aria-label="Back to dashboard" title="Back to dashboard" onClick={onClose}><Icon name="close"/></button>
+      <div className="auth-mark">r</div>
+      <p className="eyebrow">Your corner of the loop</p>
+      <h2>Sign in to <em>reloop.</em></h2>
+      <p className="form-lede">Use Google or get a secure sign-in link by email. No password to remember.</p>
+      <button type="button" className="google-button" disabled={startingGoogle || sendingEmail} onClick={startGoogleSignIn}>
+        <span className="google-g">G</span> {startingGoogle ? 'Connecting to Google...' : 'Continue with Google'}
+      </button>
+      <div className="auth-divider"><span>or use email</span></div>
+      <input className="auth-email-input" type="email" autoComplete="email" aria-label="Email address" value={email} onChange={event => { setEmail(event.target.value); setSent(false); setError(''); }} placeholder="you@example.com"/>
+      <button type="button" className="button button-dark auth-email-button" disabled={sendingEmail || startingGoogle || !email.trim()} onClick={sendEmailLink}>
+        {sendingEmail ? 'Sending link...' : 'Email me a sign-in link'} <Icon name="arrow" size={16}/>
+      </button>
+      {error && <div className="auth-error-note" role="alert">{error}</div>}
+      {sent && <div className="auth-success-note" role="status">Link sent. Check your inbox and spam folder, then open it in this same browser to finish signing in.</div>}
+      {!configured && <div className="auth-config-note">Supabase is not connected in this preview yet. Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to activate authentication.</div>}
+      <small className="form-footnote">Email links are verified by Supabase Auth. Google requires the Google provider to be enabled in Supabase.</small>
+    </div>
+  </div>;
+}
 function ProfileSetupModal({ user, onSaved, onSignOut }) { const [form, setForm] = useState({ username: user.user_metadata?.name || '', phone: '', city: '' }); const [saving, setSaving] = useState(false); const [error, setError] = useState(''); const update = (key, value) => setForm(current => ({ ...current, [key]: value })); const submit = async () => { if (!form.username.trim() || !form.phone.trim()) return setError('Username and phone number are required.'); if (!/^[+0-9 ()-]{7,20}$/.test(form.phone.trim())) return setError('Enter a valid phone number with 7–20 digits.'); setSaving(true); setError(''); try { const saved = await updateProfile(user, form); onSaved(saved); } catch (err) { setError(err.message); } finally { setSaving(false); } }; return <div className="overlay"><div className="modal form-modal profile-modal"><div className="auth-mark">r</div><p className="eyebrow">One last step</p><h2>Complete your <em>profile.</em></h2><p className="form-lede">Your Google account is verified. Add these details before posting goods or making exchanges.</p><div className="form-grid"><label className="full">Username<input value={form.username} onChange={e => update('username', e.target.value)} placeholder="How neighbours will see you"/></label><label>Phone number<input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+977 98..."/></label><label>City / area <span className="field-hint">free text</span><input type="text" value={form.city} onChange={e => update('city', e.target.value)} placeholder="Any city, village, neighbourhood, or area" autoComplete="address-level2"/></label></div>{error && <div className="auth-error-note">{error}</div>}<button className="button button-dark full-button" disabled={saving} onClick={submit}>{saving ? 'Saving profile...' : 'Save profile and continue'} <Icon name="arrow" size={17}/></button><button className="sign-out-secondary" onClick={onSignOut}>Use a different account</button><small className="form-footnote">Your email is verified by Google/Supabase. Phone is used for safer handoffs. Location accepts any name you type.</small></div></div> }
 function AccountModal({ user, profile, onClose, onSignOut }) { const name = profile?.username || user.user_metadata?.name || 'Reloop member'; return <div className="drawer-overlay"><aside className="account-drawer"><div className="drawer-topline"><span className="drawer-label">Account</span><button className="drawer-close" aria-label="Close profile" onClick={onClose}><Icon name="close" size={19}/></button></div><div className="drawer-identity"><div className="account-avatar">{name.slice(0, 2).toUpperCase()}</div><div><h2>{name}</h2><span className="verified-pill"><Icon name="check" size={13}/> Google verified</span></div></div><div className="drawer-section"><p className="drawer-section-title">Profile details</p><div className="account-details"><div><span>Email</span><strong>{user.email || 'Not available'}</strong></div><div><span>Phone</span><strong>{profile?.phone || 'Not added'}</strong></div><div><span>City / area</span><strong>{profile?.city || 'Not added'}</strong></div></div></div><div className="drawer-section drawer-note"><p className="drawer-section-title">Your Reloop</p><p>Keep your profile current so neighbours know who they are meeting for a safe handoff.</p></div><div className="drawer-actions"><button className="button button-soft full-button" onClick={onClose}>Close profile</button><button className="account-signout" onClick={onSignOut}>Sign out</button></div></aside></div> }
 

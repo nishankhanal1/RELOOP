@@ -16,7 +16,7 @@ export function resolveBuildSiteOrigin(mode = 'production') {
 
   if (explicit && !normalizeSiteOrigin(explicit)) {
     throw new Error(
-      'VITE_SITE_URL must be a clean HTTPS origin, for example https://reloop-iota-blue.vercel.app'
+      'VITE_SITE_URL must be a clean HTTPS origin, for example https://reloop-reloop00.vercel.app'
     );
   }
 

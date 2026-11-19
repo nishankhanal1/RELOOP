@@ -10,7 +10,7 @@ import { PUBLIC_PAGES } from './site-pages-content.js';
 export const SITE_NAME = 'Reloop';
 export const SITE_LANGUAGE = 'en';
 export const SITE_LOCALE = 'en_US';
-export const DEFAULT_SITE_URL = 'https://reloop-iota-blue.vercel.app';
+export const DEFAULT_SITE_URL = 'https://reloop-reloop00.vercel.app';
 export const HOME_PATH = '/';
 
 export const HOME_TITLE = 'Reloop — Buy, Sell & Exchange Pre-Loved Goods Nearby';

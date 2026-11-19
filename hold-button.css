@@ -59,7 +59,7 @@
 
 .hold-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .hold-button[data-phase='holding'][data-input='pointer'] {
