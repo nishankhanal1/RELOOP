@@ -239,11 +239,13 @@ textarea::placeholder {
   top: 0;
   right: 0;
   left: 0;
-  border-bottom-color: rgba(36, 20, 29, 0.14);
-  background: rgba(247, 247, 247, 0.96);
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+  background: transparent;
   color: #24141d;
-  backdrop-filter: blur(14px);
-  transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
+  -webkit-backdrop-filter: saturate(190%) blur(22px);
+  backdrop-filter: saturate(190%) blur(22px);
+  box-shadow: 0 8px 32px rgba(36, 20, 29, 0.06), inset 0 1px rgba(255, 255, 255, 0.4);
+  transition: border-color 420ms ease, box-shadow 420ms ease, color 240ms ease, backdrop-filter 420ms ease;
 }
 
 .topbar--hero .wordmark,
@@ -252,6 +254,12 @@ textarea::placeholder {
 .topbar--hero .sign-in-link,
 .topbar--hero .mobile-menu-toggle {
   color: #24141d;
+}
+
+.topbar--hero .sign-in-link {
+  color: #fff;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+  transition: color 240ms ease, text-shadow 360ms ease;
 }
 
 .topbar--hero .mark {
@@ -272,10 +280,12 @@ textarea::placeholder {
 }
 
 .topbar--hero.topbar--scrolled {
-  border-bottom-color: var(--line);
-  background: rgba(245, 240, 233, 0.94);
-  color: var(--ink);
-  backdrop-filter: blur(14px);
+  border-bottom-color: rgba(255, 255, 255, 0.38);
+  background: transparent;
+  color: #24141d;
+  -webkit-backdrop-filter: saturate(200%) blur(28px);
+  backdrop-filter: saturate(200%) blur(28px);
+  box-shadow: 0 12px 36px rgba(36, 20, 29, 0.08), inset 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .topbar--hero.topbar--scrolled .wordmark,
@@ -1614,10 +1624,12 @@ h2 em {
 
 /* Keep the post-hero interface readable while preserving the light house palette. */
 .topbar--hero.topbar--scrolled {
-  background: rgba(247, 247, 247, 0.96);
-  border-bottom-color: rgba(36, 20, 29, 0.14);
+  background: transparent;
+  border-bottom-color: rgba(255, 255, 255, 0.38);
   color: #24141d;
-  box-shadow: 0 8px 24px rgba(36, 20, 29, 0.08);
+  -webkit-backdrop-filter: saturate(200%) blur(28px);
+  backdrop-filter: saturate(200%) blur(28px);
+  box-shadow: 0 12px 36px rgba(36, 20, 29, 0.08), inset 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .topbar--hero.topbar--scrolled .wordmark,
