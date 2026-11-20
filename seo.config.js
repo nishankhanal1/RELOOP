@@ -3,9 +3,9 @@ import { PUBLIC_PAGES } from './site-pages-content.js';
 /**
  * Single source of truth for public SEO metadata.
  *
- * The production origin is resolved from VITE_SITE_URL (or Vercel/Netlify
- * build variables) and this constant is only the safe fallback for local
- * builds. Keep the site's public URL overrides in environment variables.
+ * VITE_SITE_URL can override the primary production origin for custom domains.
+ * Do not derive canonical URLs from deployment aliases, which may change
+ * between Vercel projects and deployments.
  */
 export const SITE_NAME = 'Reloop';
 export const SITE_LANGUAGE = 'en';

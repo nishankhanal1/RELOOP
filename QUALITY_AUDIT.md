@@ -26,7 +26,7 @@ This is a source-code audit, not a live Lighthouse, screen-reader, or production
 
 ## Build-time note
 
-`npm run build` succeeds locally. It always emits `sitemap.xml` and `robots.txt`, resolving the origin from `VITE_SITE_URL`, `VERCEL_PROJECT_PRODUCTION_URL`, `URL`, or the production fallback, then runs `scripts/verify-seo.mjs`. A successful compile does not establish a Core Web Vitals score.
+`npm run build` succeeds locally. It always emits `sitemap.xml` and `robots.txt`, resolving the canonical origin from `VITE_SITE_URL` or the primary production URL in `seo.config.js`, then runs `scripts/verify-seo.mjs`. Vercel deployment aliases are deliberately excluded so they cannot override the canonical host. A successful compile does not establish a Core Web Vitals score.
 
 ## Verification performed
 

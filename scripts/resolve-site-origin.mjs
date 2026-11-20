@@ -6,9 +6,9 @@ import {
 } from '../seo.config.js';
 
 /**
- * Resolve the production origin the same way for Vite, the sitemap generator
- * and the static page generator. A malformed explicit value must fail the
- * build instead of publishing a bad canonical URL.
+ * Resolve one canonical production origin for Vite and generated SEO files.
+ * Vercel deployment aliases are not canonical; use the configured public URL
+ * or the primary production URL instead.
  */
 export function resolveBuildSiteOrigin(mode = 'production') {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
@@ -20,10 +20,5 @@ export function resolveBuildSiteOrigin(mode = 'production') {
     );
   }
 
-  return resolveSiteOrigin(
-    explicit,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-    process.env.URL,
-    DEFAULT_SITE_URL
-  );
+  return resolveSiteOrigin(explicit, DEFAULT_SITE_URL);
 }

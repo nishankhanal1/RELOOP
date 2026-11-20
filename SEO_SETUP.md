@@ -17,7 +17,7 @@ The page content and metadata are defined in `site-pages-content.js` and `seo.co
 
 Set these variables in Vercel → Project Settings → Environment Variables (Production):
 
-1. `VITE_SITE_URL` — the exact HTTPS origin, `https://reloop-reloop00.vercel.app`. A trailing slash is accepted; a path, query or hash is not. This controls the canonical URL, Open Graph URL, sitemap and robots sitemap line. If it is omitted on Vercel, the build falls back to `VERCEL_PROJECT_PRODUCTION_URL`; the final fallback is the current production URL in `seo.config.js`.
+1. `VITE_SITE_URL` — optionally set the exact HTTPS origin, `https://reloop-reloop00.vercel.app`. A trailing slash is accepted; a path, query or hash is not. This controls the canonical URL, Open Graph URL, sitemap and robots sitemap line. If omitted, the build uses the primary production URL in `seo.config.js`, not Vercel's deployment alias.
 2. `VITE_GOOGLE_SITE_VERIFICATION` — the content token from Google Search Console's **HTML tag** verification method. The token for the currently verified property is kept as a fallback, so a deploy without this variable does not silently lose verification; set the variable to replace it.
 3. Optional: `VITE_BING_SITE_VERIFICATION` for Bing Webmaster Tools (`msvalidate.01`).
 4. Optional: `VITE_GA4_ID` for consent-based Google Analytics 4. Analytics still loads only after a visitor chooses **Accept analytics**.
