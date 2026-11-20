@@ -17,14 +17,14 @@ The page content and metadata are defined in `site-pages-content.js` and `seo.co
 
 Set these variables in Vercel → Project Settings → Environment Variables (Production):
 
-1. `VITE_SITE_URL` — optionally set the exact HTTPS origin, `https://reloop-reloop00.vercel.app`. A trailing slash is accepted; a path, query or hash is not. This controls the canonical URL, Open Graph URL, sitemap and robots sitemap line. If omitted, the build uses the primary production URL in `seo.config.js`, not Vercel's deployment alias.
+1. `VITE_SITE_URL` — optionally set the exact HTTPS origin, `https://reloop-iota-blue.vercel.app`. A trailing slash is accepted; a path, query or hash is not. This controls the canonical URL, Open Graph URL, sitemap and robots sitemap line. If omitted, the build uses the primary production URL in `seo.config.js`, not Vercel's deployment alias.
 2. `VITE_GOOGLE_SITE_VERIFICATION` — the content token from Google Search Console's **HTML tag** verification method. The token for the currently verified property is kept as a fallback, so a deploy without this variable does not silently lose verification; set the variable to replace it.
 3. Optional: `VITE_BING_SITE_VERIFICATION` for Bing Webmaster Tools (`msvalidate.01`).
 4. Optional: `VITE_GA4_ID` for consent-based Google Analytics 4. Analytics still loads only after a visitor chooses **Accept analytics**.
 
 `VITE_SITE_URL` is validated. A non-HTTPS URL, a URL with a path/query/hash, or a malformed value fails the production build rather than publishing a bad canonical.
 
-Hosted email and Google sign-in callbacks return to `VITE_SITE_URL` (or the configured production fallback), even if sign-in started from a temporary preview URL. In Supabase Authentication → URL Configuration, set the Site URL to `https://reloop-reloop00.vercel.app` and include `https://reloop-reloop00.vercel.app/**` in Redirect URLs. The callback must use the same production origin where the sign-in flow began so Supabase can retrieve its PKCE verifier. Local Vite development callbacks continue to return to the local development origin.
+Hosted email and Google sign-in callbacks return to `VITE_SITE_URL` (or the configured production fallback), even if sign-in started from a temporary preview URL. In Supabase Authentication → URL Configuration, set the Site URL to `https://reloop-iota-blue.vercel.app` and include `https://reloop-iota-blue.vercel.app/**` in Redirect URLs. The callback must use the same production origin where the sign-in flow began so Supabase can retrieve its PKCE verifier. Local Vite development callbacks continue to return to the local development origin.
 
 ## Build and verify locally
 
@@ -47,11 +47,11 @@ The build runs the same checks automatically, so a deployment with missing or du
 ## Google Search Console
 
 1. Deploy the updated build.
-2. Confirm `https://reloop-reloop00.vercel.app/robots.txt` and `https://reloop-reloop00.vercel.app/sitemap.xml` return HTTP 200 and that the sitemap URLs use the production origin. Replace this example origin if `VITE_SITE_URL` is set to a custom domain.
+2. Confirm `https://reloop-iota-blue.vercel.app/robots.txt` and `https://reloop-iota-blue.vercel.app/sitemap.xml` return HTTP 200 and that the sitemap URLs use the production origin. Replace this example origin if `VITE_SITE_URL` is set to a custom domain.
 3. In [Google Search Console](https://search.google.com/search-console), add a **URL-prefix** property for the exact HTTPS site URL, or a **Domain** property if you control its DNS.
 4. Choose **HTML tag** verification and publish the token in Vercel as `VITE_GOOGLE_SITE_VERIFICATION`. A token is currently configured as a fallback; use the token shown for the property you add if it differs.
 5. Deploy, then return to Search Console and click **Verify**. The build injects the verification tag into every generated page.
-6. Open **Indexing → Sitemaps**, submit `https://reloop-reloop00.vercel.app/sitemap.xml` (with your actual production origin), and confirm Google can fetch it.
+6. Open **Indexing → Sitemaps**, submit `https://reloop-iota-blue.vercel.app/sitemap.xml` (with your actual production origin), and confirm Google can fetch it.
 7. Use **URL Inspection** for the homepage and each public page: `/how-it-works`, `/sell`, `/exchange`, `/secondhand` and `/about`. If a page is eligible but not yet indexed, use **Request indexing**. This requests a recrawl; it does not guarantee indexing or a ranking.
 8. Check **Indexing → Pages** and **Performance → Search results** periodically for crawl/indexing issues, impressions, clicks and queries. Keep page text useful and accurate; do not repeat keywords unnaturally.
 
